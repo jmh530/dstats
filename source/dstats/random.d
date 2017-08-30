@@ -704,42 +704,42 @@ unittest {
     testBinom(3, 0.7);
 }
 
-private int hypergeoHyp(RGen = Random)(int good, int bad, int sample, ref RGen gen = rndGen) {
-    int Z = void;
+private long hypergeoHyp(RGen = Random)(long good, long bad, long sample, ref RGen gen = rndGen) {
+    long Z = void;
     double U = void;
 
-    int d1 = bad + good - sample;
+    long d1 = bad + good - sample;
     double d2 = cast(double)min(bad, good);
 
     double Y = d2;
-    int K = sample;
+    long K = sample;
     while (Y > 0.0) {
         U = uniform(0.0L, 1.0L, gen);
-        Y -= cast(int)floor(U + Y/(d1 + K));
+        Y -= cast(long)floor(U + Y/(d1 + K));
         K--;
         if (K == 0) break;
     }
-    Z = cast(int)(d2 - Y);
+    Z = cast(long)(d2 - Y);
     if (good > bad) Z = sample - Z;
     return Z;
 }
 
 private enum double D1 = 1.7155277699214135;
 private enum double D2 = 0.8989161620588988;
-private int hypergeoHrua(RGen = Random)(int good, int bad, int sample, ref RGen gen = rndGen) {
-    int Z = void;
+private long hypergeoHrua(RGen = Random)(long good, long bad, long sample, ref RGen gen = rndGen) {
+    long Z = void;
     double T = void, W = void, X = void, Y = void;
 
-    int mingoodbad = min(good, bad);
-    int popsize = good + bad;
-    int maxgoodbad = max(good, bad);
-    int m = min(sample, popsize - sample);
+    long mingoodbad = min(good, bad);
+    long popsize = good + bad;
+    long maxgoodbad = max(good, bad);
+    long m = min(sample, popsize - sample);
     double d4 = (cast(double)mingoodbad) / popsize;
     double d5 = 1.0 - d4;
     double d6 = m*d4 + 0.5;
     double d7 = sqrt((popsize - m) * sample * d4 *d5 / (popsize-1) + 0.5);
     double d8 = D1*d7 + D2;
-    int d9 = cast(int)floor(cast(double)((m+1)*(mingoodbad+1))/(popsize+2));
+    long d9 = cast(long)floor(cast(double)((m+1)*(mingoodbad+1))/(popsize+2));
     double d10 = (logGamma(d9+1) + logGamma(mingoodbad-d9+1) + logGamma(m-d9+1) +
                 logGamma(maxgoodbad-m+d9+1));
     double d11 = min(min(m, mingoodbad)+1.0, floor(d6+16*d7));
@@ -753,7 +753,7 @@ private int hypergeoHrua(RGen = Random)(int good, int bad, int sample, ref RGen 
         /* fast rejection: */
         if ((W < 0.0) || (W >= d11)) continue;
 
-        Z = cast(int)floor(W);
+        Z = cast(long)floor(W);
         T = d10 - (logGamma(Z+1) + logGamma(mingoodbad-Z+1) + logGamma(m-Z+1) +
                    logGamma(maxgoodbad-m+Z+1));
 
@@ -776,7 +776,7 @@ private int hypergeoHrua(RGen = Random)(int good, int bad, int sample, ref RGen 
 }
 
 ///
-int rHypergeometric(RGen = Random)(int n1, int n2, int n, ref RGen gen = rndGen) {
+long rHypergeometric(RGen = Random)(long n1, long n2, long n, ref RGen gen = rndGen) {
     dstatsEnforce(n <= n1 + n2, "n must be <= n1 + n2 for hypergeometric distribution.");
     dstatsEnforce(n1 >= 0 && n2 >= 0 && n >= 0,
         "n, n1, n2 must be >= 0 for hypergeometric distribution.");
@@ -791,9 +791,21 @@ int rHypergeometric(RGen = Random)(int n1, int n2, int n, ref RGen gen = rndGen)
     }
 }
 
+deprecated {
+    int rHypergeometric(RGen = Random)(int n1, int n2, int n, ref RGen gen = rndGen) {
+        dstatsEnforce(n <= n1 + n2, "n must be <= n1 + n2 for hypergeometric distribution.");
+        dstatsEnforce(n1 >= 0 && n2 >= 0 && n >= 0,
+            "n, n1, n2 must be >= 0 for hypergeometric distribution.");
+
+        import std.conv : to;
+
+        return rHypergeometric!(RGen)(n1.to!long, n2.to!long, n.to!long, gen).to!int;
+    }
+}
+
 unittest {
 
-    static double hyperStdev(int n1, int n2, int n) {
+    static double hyperStdev(long n1, long n2, long n) {
         return sqrt(cast(double) n * (cast(double) n1 / (n1 + n2))
         * (1 - cast(double) n1 / (n1 + n2)) * (n1 + n2 - n) / (n1 + n2 - 1));
     }
@@ -806,8 +818,8 @@ unittest {
         return numer / denom;
     }
 
-    void testHyper(int n1, int n2, int n) {
-        int[] observ = new int[100_000];
+    void testHyper(long n1, long n2, long n) {
+        long[] observ = new long[100_000];
         foreach(ref elem; observ)
         elem = rHypergeometric(n1, n2, n);
         auto ksRes = ksTest(observ, parametrize!(hypergeometricCDF)(n1, n2, n));
