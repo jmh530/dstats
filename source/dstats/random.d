@@ -274,8 +274,8 @@ double rNorm(RGen = Random)(double mean, double sd, ref RGen gen = rndGen) {
 
     double x1 = void, x2 = void, r2 = void;
     do {
-        x1 = uniform(-1.0L, 1.0L, gen);
-        x2 = uniform(-1.0L, 1.0L, gen);
+        x1 = rUniform(-1.0L, 1.0L, gen);
+        x2 = rUniform(-1.0L, 1.0L, gen);
         r2 = x1 * x1 + x2 * x2;
     } while (r2 > 1.0L || r2 == 0.0L);
     double f = sqrt(-2.0L * log(r2) / r2);
@@ -394,7 +394,7 @@ int rPoisson(RGen = Random)(double lam, ref RGen gen = rndGen) {
         int X = 0;
         double prod = 1.0;
         while (true) {
-            U = uniform(0.0L, 1.0L, gen);
+            U = rUniform(0.0L, 1.0L, gen);
             prod *= U;
             if (prod > enlam) {
                 X += 1;
@@ -419,8 +419,8 @@ int rPoisson(RGen = Random)(double lam, ref RGen gen = rndGen) {
         double vr = 0.9277 - 3.6224/(b-2);
 
         while (true) {
-            U = uniform(-0.5L, 0.5L, gen);
-            V = uniform(0.0L, 1.0L, gen);
+            U = rUniform(-0.5L, 0.5L, gen);
+            V = rUniform(0.0L, 1.0L, gen);
             us = 0.5 - abs(U);
             k = cast(int) floor((2*a/us + b)*U + lam + 0.43);
             if ((us >= 0.07) && (V <= vr)) {
@@ -469,7 +469,7 @@ unittest {
 int rBernoulli(RGen = Random)(double P = 0.5, ref RGen gen = rndGen) {
     dstatsEnforce(P >= 0 && P <= 1, "P must be between 0, 1 for Bernoulli distribution.");
 
-    double pVal = uniform(0.0L, 1.0L, gen);
+    double pVal = rUniform(0.0L, 1.0L, gen);
     return cast(int) (pVal <= P);
 }
 
@@ -544,8 +544,8 @@ private int rBinomialBtpe(RGen = Random)(int n, double p, ref RGen gen = rndGen)
     /* sigh ... */
 Step10:
     nrq = n*r*q;
-    u = uniform(0.0L, p4, gen);
-    v = uniform(0.0L, 1.0L, gen);
+    u = rUniform(0.0L, p4, gen);
+    v = rUniform(0.0L, 1.0L, gen);
     if (u > p1) goto Step20;
     y = cast(int)floor(xm - p1*v + u);
     goto Step60;
@@ -646,13 +646,13 @@ private int rBinomialInversion(RGen = Random)(int n, double p, ref RGen gen = rn
     }
     X = 0;
     px = qn;
-    U = uniform(0.0L, 1.0L, gen);
+    U = rUniform(0.0L, 1.0L, gen);
     while (U > px) {
         X++;
         if (X > bound) {
             X = 0;
             px = qn;
-            U = uniform(0.0L, 1.0L, gen);
+            U = rUniform(0.0L, 1.0L, gen);
         } else {
             U -= px;
             px  = ((n-X+1) * p * px)/(X*q);
@@ -714,7 +714,7 @@ private int hypergeoHyp(RGen = Random)(int good, int bad, int sample, ref RGen g
     double Y = d2;
     int K = sample;
     while (Y > 0.0) {
-        U = uniform(0.0L, 1.0L, gen);
+        U = rUniform(0.0L, 1.0L, gen);
         Y -= cast(int)floor(U + Y/(d1 + K));
         K--;
         if (K == 0) break;
@@ -746,8 +746,8 @@ private int hypergeoHrua(RGen = Random)(int good, int bad, int sample, ref RGen 
     /* 16 for 16-decimal-digit precision in D1 and D2 */
 
     while (true) {
-        X = uniform(0.0L, 1.0L, gen);
-        Y = uniform(0.0L, 1.0L, gen);
+        X = rUniform(0.0L, 1.0L, gen);
+        Y = rUniform(0.0L, 1.0L, gen);
         W = d6 + d8*(Y- 0.5)/X;
 
         /* fast rejection: */
@@ -830,7 +830,7 @@ private int rGeomSearch(RGen = Random)(double p, ref RGen gen = rndGen) {
     int X = 1;
     double sum = p, prod = p;
     double q = 1.0 - p;
-    double U = uniform(0.0L, 1.0L, gen);
+    double U = rUniform(0.0L, 1.0L, gen);
     while (U > sum) {
         prod *= q;
         sum += prod;
@@ -840,7 +840,7 @@ private int rGeomSearch(RGen = Random)(double p, ref RGen gen = rndGen) {
 }
 
 private int rGeomInvers(RGen = Random)(double p, ref RGen gen = rndGen) {
-    return cast(int)ceil(log(1.0-uniform(0.0L, 1.0L, gen))/log(1.0-p));
+    return cast(int)ceil(log(1.0-rUniform(0.0L, 1.0L, gen))/log(1.0-p));
 }
 
 int rGeometric(RGen = Random)(double p, ref RGen gen = rndGen) {
@@ -914,7 +914,7 @@ unittest {
 double rLaplace(RGen = Random)(double mu = 0, double b = 1, ref RGen gen = rndGen) {
     dstatsEnforce(b > 0, "b must be > 0 for Laplace distribution.");
 
-    double p = uniform(0.0L, 1.0L, gen);
+    double p = rUniform(0.0L, 1.0L, gen);
     return invLaplaceCDF(p, mu, b);
 }
 
@@ -938,7 +938,7 @@ unittest {
 double rExponential(RGen = Random)(double lambda, ref RGen gen = rndGen) {
     dstatsEnforce(lambda > 0, "lambda must be > 0 for exponential distribution.");
 
-    double p = uniform(0.0L, 1.0L, gen);
+    double p = rUniform(0.0L, 1.0L, gen);
     return -log(p) / lambda;
 }
 
@@ -964,7 +964,7 @@ private double stdGamma(RGen = Random)(double shape, ref RGen gen) {
         return rExponential(1.0, gen);
     } else if (shape < 1.0) {
         for (;;) {
-            U = uniform(0.0L, 1.0, gen);
+            U = rUniform(0.0L, 1.0, gen);
             V = rExponential(1.0, gen);
             if (U <= 1.0 - shape) {
                 X = pow(U, 1.0/shape);
@@ -989,7 +989,7 @@ private double stdGamma(RGen = Random)(double shape, ref RGen gen) {
             } while (V <= 0.0);
 
             V = V*V*V;
-            U = uniform(0.0L, 1.0L, gen);
+            U = rUniform(0.0L, 1.0L, gen);
             if (U < 1.0 - 0.0331*(X*X)*(X*X)) return (b*V);
             if (log(U) < 0.5*X*X + b*(1. - V + log(V))) return (b*V);
         }
@@ -1030,8 +1030,8 @@ double rBeta(RGen = Random)(double a, double b, ref RGen gen = rndGen) {
         /* Use Jonk's algorithm */
 
         while (1) {
-            U = uniform(0.0L, 1.0L, gen);
-            V = uniform(0.0L, 1.0L, gen);
+            U = rUniform(0.0L, 1.0L, gen);
+            V = rUniform(0.0L, 1.0L, gen);
             X = pow(U, 1.0/a);
             Y = pow(V, 1.0/b);
 
@@ -1094,7 +1094,7 @@ unittest {
 double rLogistic(RGen = Random)(double loc, double scale, ref RGen gen = rndGen) {
     dstatsEnforce(scale > 0, "scale must be > 0 for logistic distribution.");
 
-    double U = uniform(0.0L, 1.0L, gen);
+    double U = rUniform(0.0L, 1.0L, gen);
     return loc + scale * log(U/(1.0 - U));
 }
 
@@ -1163,7 +1163,7 @@ double rWald(RGen = Random)(double mu, double lambda, ref RGen gen = rndGen) {
     double Y = rNorm(0, 1, gen);
     Y = mean*Y*Y;
     double X = mean + mu_2l*(Y - sqrt(4*scale*Y + Y*Y));
-    double U = uniform(0.0L, 1.0L, gen);
+    double U = rUniform(0.0L, 1.0L, gen);
     if (U <= mean/(mean+X)) {
         return X;
     } else
@@ -1190,7 +1190,7 @@ unittest {
 double rRayleigh(RGen = Random)(double mode, ref RGen gen = rndGen) {
     dstatsEnforce(mode > 0, "mode must be > 0 for Rayleigh distribution.");
 
-    return mode*sqrt(-2.0 * log(1.0 - uniform(0.0L, 1.0L, gen)));
+    return mode*sqrt(-2.0 * log(1.0 - rUniform(0.0L, 1.0L, gen)));
 }
 
 unittest {
@@ -1198,5 +1198,8 @@ unittest {
     auto ksRes = ksTest(observ, parametrize!(rayleighCDF)(3));
     writeln("100k samples from rayleigh(3):  K-S P-val:  ", ksRes.p);
 }
+
+///
+alias rUniform = uniform;
 
 
