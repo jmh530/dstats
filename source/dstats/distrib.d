@@ -874,17 +874,28 @@ double chiSquareCDFR(double x, double v) {
  * v = Degrees of freedom. Must be positive.
  *
  */
-double invChiSquareCDFR(double v, double p) {
+deprecated {
+    double invChiSquareCDFR(double v, double p) {
+        return invChiSquareCDFR_Alt(p, v);
+    }
+}
+
+/**
+ * Alternate version of invChiSquareCDFR. After deprecation of current
+ * invChiSquareCDFR, create new invChiSquareCDFR and deprecate an alias
+ * to this function.
+*/
+double invChiSquareCDFR_Alt(double p, double v) {
     dstatsEnforce(v >= 1.0, "Must have at least 1 degree of freedom for chi-square.");
     dstatsEnforce(p >= 0 && p <= 1, "P-values must be between 0, 1.");
-    return  2.0 * gammaIncompleteComplInverse( 0.5*v, p);
+    return  2.0 * gammaIncompleteComplInverse(0.5 * v, p);
 }
 
 unittest {
-    assert(feqrel(chiSquareCDFR(invChiSquareCDFR(3.5, 0.1), 3.5), 0.1)>=double.mant_dig-3);
+    assert(feqrel(chiSquareCDFR(invChiSquareCDFR_Alt(0.1, 3.5), 3.5), 0.1)>=double.mant_dig-3);
     assert(approxEqual(
         chiSquareCDF(0.4L, 19.02L) + chiSquareCDFR(0.4L, 19.02L), 1.0L));
-    assert(ae( invChiSquareCDFR( 3, chiSquareCDFR(1, 3)), 1));
+    assert(ae( invChiSquareCDFR_Alt(chiSquareCDFR(1, 3), 3), 1));
 
     assert(ae(chiSquareCDFR(0.2, 1), 0.6547208));
     assert(ae(chiSquareCDFR(0.2, 2), 0.9048374));
@@ -1241,7 +1252,18 @@ double fisherCDFR(double x, double df1, double df2) {
  *      z = betaIncompleteInverse( df1/2, df2/2, p ),
  *      x = df2 z / (df1 (1-z)).
 */
-double invFisherCDFR(double df1, double df2, double p ) {
+deprecated {
+    double invFisherCDFR(double df1, double df2, double p) {
+        return invFisherCDFR_Alt(p, df1, df2);
+    }
+}
+
+/**
+ * Alternate version of invFisherCDFR. After deprecation of current
+ * invFisherCDFR, create new invFisherCDFR and deprecate an alias
+ * to this function.
+*/
+double invFisherCDFR_Alt(double p, double df1, double df2) {
     dstatsEnforce(df1 > 0 && df2 > 0,
         "Fisher distribution must have >0 degrees of freedom.");
     dstatsEnforce(p >= 0 && p <= 1, "P-values must be between 0, 1.");
@@ -1265,10 +1287,10 @@ unittest {
     // fDistCompl(df1, df2, x) = Excel's FDIST(x, df1, df2)
       assert(fabs(fisherCDFR(16.5, 6, 4) - 0.00858719177897249L)< 0.0000000000005L);
       assert(fabs((1-fisherCDF(0.1, 12, 23)) - 0.99990562845505L)< 0.0000000000005L);
-      assert(fabs(invFisherCDFR(8, 34, 0.2) - 1.48267037661408L)< 0.0000000005L);
-      assert(fabs(invFisherCDFR(4, 16, 0.008) - 5.043_537_593_48596L)< 0.0000000005L);
+      assert(fabs(invFisherCDFR_Alt(0.2, 8, 34) - 1.48267037661408L)< 0.0000000005L);
+      assert(fabs(invFisherCDFR_Alt(0.008, 4, 16) - 5.043_537_593_48596L)< 0.0000000005L);
       // This one used to fail because of a bug in the definition of MINLOG.
-      assert(approxEqual(fisherCDFR(invFisherCDFR(4,16, 0.008), 4, 16), 0.008));
+      assert(approxEqual(fisherCDFR(invFisherCDFR_Alt(0.008, 4, 16), 4, 16), 0.008));
 }
 
 ///
