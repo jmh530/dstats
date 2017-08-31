@@ -562,14 +562,14 @@ unittest {
 /**Returns the value of k for the given p-value, n and p.  If p-value does
  * not exactly map to a value of k, the value for which binomialCDF(k, n, p)
  * is closest to pVal is used.*/
-uint invBinomialCDF(double pVal, uint n, double p) {
+ulong invBinomialCDF(double pVal, ulong n, double p) {
     dstatsEnforce(pVal >= 0 && pVal <= 1, "p-values must be between 0, 1.");
     dstatsEnforce(p >= 0 && p <= 1, "p must be between 0, 1 in binomial distribution.");
 
     // Use normal approximation to get approx answer, then brute force search.
     // This works better than you think because for small n, there's not much
     // search space and for large n, the normal approx. is doublely good.
-    uint guess = cast(uint) max(round(
+    ulong guess = cast(ulong) max(round(
           invNormalCDF(pVal, n * p, sqrt(n * p * (1 - p)))) + 0.5, 0);
     if(guess > n) {
         if(pVal < 0.5)  // Numerical issues/overflow.
@@ -581,7 +581,7 @@ uint invBinomialCDF(double pVal, uint n, double p) {
     if(guessP == pVal) {
         return guess;
     } else if(guessP < pVal) {
-        for(uint k = guess + 1; k <= n; k++) {
+        for(ulong k = guess + 1; k <= n; k++) {
             double newP = guessP + binomialPMF(k, n, p);
             if(abs(newP - pVal) > abs(guessP - pVal)) {
                 return k - 1;
@@ -591,7 +591,7 @@ uint invBinomialCDF(double pVal, uint n, double p) {
         }
         return n;
     } else {
-        for(uint k = guess - 1; k != uint.max; k--) {
+        for(ulong k = guess - 1; k != ulong.max; k--) {
             double newP = guessP - binomialPMF(k + 1, n, p);
             if(abs(newP - pVal) > abs(guessP - pVal)) {
                 return k + 1;
@@ -603,6 +603,14 @@ uint invBinomialCDF(double pVal, uint n, double p) {
     }
 }
 
+deprecated {
+    uint invBinomialCDF(double pVal, uint n, double p) {
+        import std.conv : to;
+
+        return invBinomialCDF(pVal, n.to!ulong, p).to!uint;
+    }
+}
+
 unittest {
    Random gen = Random(unpredictableSeed);
    foreach(i; 0..1_000) {
@@ -610,8 +618,8 @@ unittest {
        // value of k can map to the same p-value at machine precision.
        // Obviously, this is one of those corner cases that nothing can be
        // done about.  Using small n's, moderate p's prevents this.
-       uint n = uniform(5U, 10U);
-       uint k = uniform(0U, n);
+       ulong n = uniform(5UL, 10UL);
+       ulong k = uniform(0UL, n);
        double p = uniform(0.1L, 0.9L);
        double pVal = binomialCDF(k, n, p);
        assert(invBinomialCDF(pVal, n, p) == k);
