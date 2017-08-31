@@ -9,4 +9,4 @@ module dstats;
 public import dstats.alloc, dstats.sort, dstats.base, dstats.cor,
               dstats.distrib, dstats.infotheory, dstats.random,
               dstats.summary, dstats.tests, dstats.regress, dstats.kerneldensity,
-              dstats.pca;
+              dstats.pca, dstats.distributions;
